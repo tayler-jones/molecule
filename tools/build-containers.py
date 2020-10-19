@@ -65,6 +65,10 @@ if __name__ == "__main__":
         f"-t {image_name}:{version_tag} {tagging_args} {expire} ."
     )
 
+    print(f"Image builded as {image_name}:{version_tag}")
+    run(f"{engine} run {image_name}:{version_tag} pip3 check")
+    run(f"{engine} run {image_name}:{version_tag} molecule drivers")
+
     # Decide to push when all conditions below are met:
     if publish:
         run(f"{engine} login quay.io")

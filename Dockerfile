@@ -9,6 +9,7 @@ WORKDIR /usr/src/molecule
 #   quite often.
 # edge/testing needed for: py3-arrow py3-tabulate
 RUN apk add -v --progress --update --no-cache \
+ansible \
 docker-py \
 gcc \
 git \
@@ -49,16 +50,18 @@ py3-pynacl \
 py3-pytest \
 py3-requests \
 py3-ruamel \
+py3-ruamel.yaml.clib \
 py3-setuptools \
 py3-simplejson \
 py3-urllib3 \
 py3-virtualenv \
 py3-websocket-client \
+py3-wheel \
 py3-yaml \
 python3 \
 python3-dev
 
-ENV MOLECULE_EXTRAS="docker,docs,podman,windows,lint"
+ENV MOLECULE_EXTRAS="docker,podman,windows,lint"
 
 ENV MOLECULE_PLUGINS="\
 molecule-azure \
@@ -94,7 +97,7 @@ FROM alpine:edge
 LABEL maintainer="Ansible <info@ansible.com>"
 
 ENV PACKAGES="\
-docker \
+ansible \
 git \
 openssh-client \
 ruby \
@@ -102,6 +105,7 @@ docker-py \
 libvirt \
 rsync \
 py3-bcrypt \
+py3-boto3 \
 py3-botocore \
 py3-certifi \
 py3-cffi \
@@ -113,6 +117,7 @@ py3-docutils \
 py3-flake8 \
 py3-idna \
 py3-jinja2 \
+py3-libvirt \
 py3-mccabe \
 py3-netifaces \
 py3-paramiko \
@@ -128,10 +133,12 @@ py3-pynacl \
 py3-pytest \
 py3-requests \
 py3-ruamel \
+py3-ruamel.yaml.clib \
 py3-setuptools \
 py3-urllib3 \
 py3-virtualenv \
 py3-websocket-client \
+py3-wheel \
 python3 \
 "
 
@@ -156,16 +163,14 @@ json \
 etc \
 "
 
-ENV MOLECULE_EXTRAS="docker,docs,podman,windows,lint"
+ENV MOLECULE_EXTRAS="docker,podman,windows,lint"
 
 ENV MOLECULE_PLUGINS="\
 molecule-azure \
 molecule-containers \
 molecule-docker \
-molecule-digitalocean \
 molecule-ec2 \
 molecule-gce \
-molecule-hetznercloud \
 molecule-libvirt \
 molecule-lxd \
 molecule-openstack \
@@ -187,21 +192,6 @@ COPY --from=molecule-builder \
 RUN \
 python3 -m pip install \
 ${PIP_INSTALL_ARGS} \
-"molecule[${MOLECULE_EXTRAS}]" testinfra ${MOLECULE_PLUGINS} && \
-molecule --version && \
-molecule drivers | grep azure && \
-molecule drivers | grep containers && \
-molecule drivers | grep digitalocean && \
-molecule drivers | grep docker && \
-molecule drivers | grep ec2 && \
-molecule drivers | grep gce && \
-molecule drivers | grep hetznercloud && \
-molecule drivers | grep libvirt && \
-molecule drivers | grep lxd && \
-molecule drivers | grep openstack && \
-molecule drivers | grep podman && \
-molecule drivers | grep vagrant && \
-true
-# running molecule commands adds a minimal level fail-safe about build success
+"molecule[${MOLECULE_EXTRAS}]" testinfra ${MOLECULE_PLUGINS}
 
 ENV SHELL /bin/bash
